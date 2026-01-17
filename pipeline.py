@@ -12,6 +12,7 @@ from google import genai
 from google.genai import types
 
 from extra.interactive_mode import run_interactive_mode
+from extra.resultpdf import create_clinical_pdf
 from extra.visual_report import generate_infographic
 
 # Imports obrigatórios para o novo escopo
@@ -30,7 +31,7 @@ OUT_PATH = BASE_DIR / "results.json"
 API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not API_KEY:
-    raise ValueError("CRÍTICO: GOOGLE_API_KEY não encontrada no .env")
+    raise ValueError("ERRO: GOOGLE_API_KEY não encontrada no .env")
 
 # Cliente genai para acessar a API do Google e utilizar o Gemini
 GENAI_CLIENT = genai.Client(api_key=API_KEY)
@@ -102,7 +103,7 @@ def load_prompt(prompt_version: str) -> str:
     path = PROMPTS_DIR / f"prompt_{prompt_version}.txt"
     if not path.exists():
         # Fallback para teste se arquivo não existir
-        return "Analise o texto: {INPUT}"
+        return "Faça uma análise psicanalítica do texto: {INPUT}"
     return path.read_text(encoding="utf-8")
 
 
@@ -186,19 +187,18 @@ def generation_node(state: ClinicalState) -> ClinicalState:
     """
     print(f"--- Node: Generation ({state['filename']}) ---")
 
-    # 1. Carrega o template do prompt baseado na versão do estado [cite: 74-77]
+    # Carrega o template do prompt baseado na versão do estado
     prompt_template = load_prompt(state["prompt_version"])
-    # 2. Injeta o texto de entrada no placeholder {INPUT} do prompt
+    # Injeta o texto de entrada no placeholder {INPUT} do prompt
     full_prompt = prompt_template.replace("{INPUT}", state["input_text"])
 
     try:
-        # 3. Chama o modelo (API do Gemini)
+        # Chama o modelo (API do Gemini)
         response_str = call_model(full_prompt)
-        # Retorna a atualização do estado com a string JSON crua [cite: 101]
+        # Retorna a atualização do estado com a string JSON crua
         state["raw_response"] = response_str
         return state
     except Exception as e:
-        # Registra o erro caso a chamada falhe
         state["errors"] = [f"Error in generation node: {str(e)}"]
         return state
 
@@ -351,9 +351,11 @@ def main():
         action="store_true",
         help="Usa o Prompt V1 (Básico) ao invés do V2 (Estruturado)",
     )
+    # Adiciona a flag -v0 para utilizar o prompt V0 ao invés do V2
     parser.add_argument(
         "-v0", action="store_true", help="Usa o Prompt V0 (Minimalista/Stress Test)"
     )
+    # Adiciona a flag -i para utilizar o modo interativo ao invés de "batch"
     parser.add_argument(
         "-i", "--interactive", action="store_true", help="Modo Chatbot Interativo"
     )
@@ -406,6 +408,14 @@ def main():
                     ok_count += 1
                     # Converter modelo Pydantic para dict para salvar no JSON final
                     output_dict = output_data.model_dump()
+
+                    # Geração de output em PDF para facilitar a leitura humana
+                    pdf_dir = BASE_DIR / "data" / "output"
+                    try:
+                        pdf_path = create_clinical_pdf(output_dict, fname, pdf_dir)
+                        print(f"Result PDF created: {pdf_path.name}")
+                    except Exception as e:
+                        print(f"Error creating result PDF: {e}")
                 else:
                     output_dict = None
 
@@ -444,7 +454,7 @@ def main():
         try:
             generate_infographic(payload, DASHBOARD_PATH)
         except Exception as e:
-            print(f"Erro ao gerar gráfico: {e}")
+            print(f"Error creating result dashboard: {e}")
 
 
 if __name__ == "__main__":
