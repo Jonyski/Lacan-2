@@ -1,0 +1,24 @@
+### TAREFA
+
+Leia o relato do paciente abaixo e gere uma análise psicanalítica estruturada em formato JSON.
+
+### INSTRUÇÕES
+
+1. Use seu conhecimento amplo sobre psicologia para interpretar o texto.
+2. Crie um modelo da psiquê do indivíduo e construa hipóteses sobre seu estado.
+3. Mantenha-se realista e profissional; atenha-se à ética.
+
+### FORMATO DE SAÍDA
+
+Um JSON válido contendo:
+- análise clínica
+- temas principais
+- significantes
+- hipóteses clínicas
+- perguntas ao indivíduo
+- análise de risco
+- laudo clínico (caso necessário)
+
+### TEXTO DO PACIENTE:
+
+"{INPUT}"
