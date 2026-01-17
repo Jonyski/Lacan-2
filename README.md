@@ -44,9 +44,9 @@ O prompt v0 por sua vez é um experimento para testar a força da opção de out
 
 Mesmo sem instruções adicionais sobre a formatação e as regras de negócio, o sistema se mostrou capaz de gerar outputs que se adequam ao schema do Pydantic.
 
-## Como funciona o pipeline
+## Como funciona a pipeline
 
-A pipeline foi feita com a API de grafos do [LangGraph](https://docs.langchain.com/oss/python/langgraph/graph-api). O primeiro passo é a leitura dos arquivos contendo os inputs do usuário/paciente, que devem ser um arquivo `.txt` no diretório `data/input`. Depois, passamos este input para um "nó de geração", que utiliza uma chamada à API do Gemini para gerar o JSON com a análise clínica inicial. Então, passamos o JSON gerado para o "nó de validação", que irá conferir se a formatação e as regras de negócio estão sendo seguidas através do Pydantic. Por fim, faz-se uma checagem dos erros de validação:
+A pipeline foi feita com a API de grafos do [LangGraph](https://docs.langchain.com/oss/python/langgraph/graph-api). O primeiro passo é a leitura dos arquivos contendo os inputs do usuário/paciente, que devem ser um arquivo `.txt` no diretório `data/input`. Depois, passamos este input para um "nó de geração", que utiliza uma chamada à API do Gemini para gerar o JSON com a análise clínica inicial. Nesta etapa de geração, todos os campos do objeto JSON são preenchidos de uma vez; seria possível fragmentar a pipeline em etapas especializadas, mas decidi reunir tudo em um único nó para reduzir o número de chamadas à API. Então, passamos o JSON gerado para o "nó de validação", que irá conferir se a formatação e as regras de negócio estão sendo seguidas através do Pydantic. Por fim, faz-se uma checagem dos erros de validação:
 
 - Se houve erros, vamos para o "nó de correção", que faz uma nova chamada à API do Gemini com um prompt que pede para o agente corrigir os equívocos. O output dessa correção é então enviado novamente para o nó de validação. Este ciclo pode ocorrer no máximo 3 vezes, para evitarmos loops infinitos.
 - Se não houve erros, terminamos a pipeline e salvamos o output.
