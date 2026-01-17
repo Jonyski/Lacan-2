@@ -74,7 +74,6 @@ def generate_infographic(payload: Dict[str, Any], output_path: Path):
     colors_pie = ["#55c276", "#d6384d"]  # Verde e Vermelho
     explode = (0.05, 0)
 
-    # CORREÇÃO 2: Função para ocultar 0%
     def func_autopct(pct):
         return f"{pct:.1f}%" if pct > 0 else ""
 

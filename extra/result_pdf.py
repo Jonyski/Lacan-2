@@ -20,7 +20,6 @@ def check_space(pdf, height_needed):
     """
     Verifica se há espaço suficiente na página. Se não, cria nova página.
     """
-    # Altura da página - Margem Inferior - Posição Atual
     if pdf.get_y() + height_needed > (pdf.h - 20):
         pdf.add_page()
 
