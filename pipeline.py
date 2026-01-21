@@ -12,7 +12,7 @@ from google import genai
 from google.genai import types
 
 from extra.interactive_mode import run_interactive_mode
-from extra.resultpdf import create_clinical_pdf
+from extra.result_pdf import create_clinical_pdf
 from extra.visual_report import generate_infographic
 
 # Imports obrigatórios para o novo escopo
@@ -459,3 +459,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
